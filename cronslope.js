@@ -12,7 +12,7 @@ const updateCategory = async (category) => {
             const insertQuery = `INSERT INTO jogoo_links (item_id1,item_id2,category,cnt,diff_slope)
 SELECT item_id1, item_id2, $1::integer, cnt, diff_slope
 FROM (
-    SELECT A.product_id AS item_id1, B.product_id AS item_id2, count(*) - 1 AS cnt, row_number() OVER (PARTITION BY A.product_id ORDER BY count(*) DESC, B.product_id DESC) AS rank,
+    SELECT A.product_id AS item_id1, B.product_id AS item_id2, count(*) AS cnt, row_number() OVER (PARTITION BY A.product_id ORDER BY count(*) DESC, B.product_id DESC) AS rank,
     (SUM(B.rating - A.rating) - SUM(A.rating - B.rating)) AS diff_slope 
     FROM (SELECT product_id, member_id, rating FROM jogoo_ratings WHERE rating >= 0 AND category=$1::integer) A
     LEFT JOIN (SELECT product_id, member_id, rating FROM jogoo_ratings WHERE rating >= 0 AND category=$1::integer) B
@@ -25,7 +25,7 @@ WHERE rank <= $2::integer`;
             await client.query(insertQuery, args);
         } else {
             const insertQuery = `INSERT INTO jogoo_links (item_id1,item_id2,category,cnt,diff_slope)
-SELECT A.product_id, B.product_id, $1::integer, count(*) - 1, (SUM(B.rating - A.rating) - SUM(A.rating - B.rating))
+SELECT A.product_id, B.product_id, $1::integer, count(*), (SUM(B.rating - A.rating) - SUM(A.rating - B.rating))
 FROM (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= 0 AND category=$1::integer) A
 LEFT JOIN (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= 0 AND category=$1::integer) B
 ON A.member_id = B.member_id AND A.product_id <> B.product_id
