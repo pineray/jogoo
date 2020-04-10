@@ -1,6 +1,6 @@
 const { Client } = require('pg');
-const { jogooDbConfig } = require('./config');
-const client = new Client(jogooDbConfig);
+const { JOGOO_DB_CONFIG } = require('./config');
+const client = new Client(JOGOO_DB_CONFIG);
 client.connect();
 
 const installSQL = `BEGIN;

@@ -1,5 +1,5 @@
-const JogooConfig = {
-    jogooDbConfig: {
+const JOGOO_CONFIG = {
+    JOGOO_DB_CONFIG: {
         user: process.env.JOGOO_DB_USER || 'postgres',
         host: process.env.JOGOO_DB_HOST || '127.0.0.1',
         database: process.env.JOGOO_DB_NAME || 'jogoodb',
@@ -8,4 +8,4 @@ const JogooConfig = {
     }
 };
 
-module.exports = JogooConfig;
+module.exports = JOGOO_CONFIG;
