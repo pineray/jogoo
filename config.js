@@ -6,10 +6,13 @@ const JOGOO_CONFIG = {
         password: process.env.JOGOO_DB_AUTH || 'postgres',
         port: process.env.JOGOO_DB_AUTH || 5432
     },
+    JOGOO_LINKS_MAX_NUMBER: 30,
     JOGOO_RATING_PURCHASED: 1.0,
     JOGOO_RATING_CLICK_INITIAL: 0.7,
     JOGOO_RATING_CLICK_INCREASE: 0.01,
-    JOGOO_RATING_NOT_INTERESTED: -1.0
+    JOGOO_RATING_NOT_INTERESTED: -1.0,
+    JOGOO_RATING_RETENTION_PERIOD: '-6 months',
+    JOGOO_RATING_THRESHOLD: 0.66
 };
 
 module.exports = JOGOO_CONFIG;
