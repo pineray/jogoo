@@ -6,6 +6,7 @@ const JOGOO_CONFIG = {
         password: process.env.JOGOO_DB_AUTH || 'postgres',
         port: process.env.JOGOO_DB_AUTH || 5432
     },
+    JOGOO_ITEMS_MAX_RETURN: 1000000,
     JOGOO_LINKS_MAX_NUMBER: 30,
     JOGOO_RATING_PURCHASED: 1.0,
     JOGOO_RATING_CLICK_INITIAL: 0.7,
