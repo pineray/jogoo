@@ -1,8 +1,16 @@
-const { JogooClient } = require('./dist/src/index');
-const client = new JogooClient();
-client.connect();
+import {JogooClient} from "./client";
 
-const installSQL = `BEGIN;
+export class JogooInstall {
+
+    /** @var JogooClient */
+    client;
+
+    constructor(client: JogooClient) {
+        this.client = client;
+    }
+
+    async do() {
+        const installSQL = `BEGIN;
 CREATE TABLE jogoo_ratings(member_id INTEGER,product_id INTEGER,category INTEGER,rating FLOAT,ts TIMESTAMP);
 CREATE INDEX jogoo_ratings_member_id_index ON jogoo_ratings(member_id);
 CREATE INDEX jogoo_ratings_product_id_index ON jogoo_ratings(product_id);
@@ -18,8 +26,11 @@ CREATE INDEX jogoo_links_item_id2_index ON jogoo_links(item_id2);
 CREATE INDEX jogoo_links_category ON jogoo_links(category);
 COMMIT;`;
 
-client.query(installSQL).then((res) => {
-    console.log('Jogoo installation is complete. Thank you for choosing the Jogoo.');
-}).catch((err) => {
-    console.log(err.stack);
-});
+        this.client.query(installSQL).then(() => {
+            console.log('Jogoo installation is complete. Thank you for choosing the Jogoo.');
+        }).catch((err) => {
+            console.log(err.stack);
+        });
+    }
+
+}

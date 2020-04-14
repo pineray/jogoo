@@ -1,4 +1,5 @@
 import { JOGOO_LINKS_MAX_NUMBER, JOGOO_RATING_RETENTION_PERIOD, JOGOO_RATING_THRESHOLD } from './config';
+import { JogooClient } from "./client";
 
 export class JogooUpdate {
 
@@ -109,4 +110,24 @@ GROUP BY A.product_id, B.product_id`;
         }
     }
 
+}
+
+export class JogooUpdateLinks extends JogooUpdate {
+    constructor(client: JogooClient) {
+        super(client, 'links');
+    }
+
+    async do() {
+        return await this.updateAll();
+    }
+}
+
+export class JogooUpdateSlope extends JogooUpdate {
+    constructor(client: JogooClient) {
+        super(client, 'slope');
+    }
+
+    async do() {
+        return await this.updateAll();
+    }
 }
