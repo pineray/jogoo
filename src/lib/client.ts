@@ -1,7 +1,10 @@
-const { Pool } = require('pg');
-const { JOGOO_DB_CONFIG } = require('./config');
+import { Pool } from 'pg';
+import { JOGOO_DB_CONFIG } from './config';
 
-class JogooClient {
+export class JogooClient {
+
+    /** @var {Pool} */
+    connection;
 
     constructor() {
         this.connection = new Pool(JOGOO_DB_CONFIG);
@@ -18,5 +21,3 @@ class JogooClient {
     }
 
 }
-
-module.exports = JogooClient;

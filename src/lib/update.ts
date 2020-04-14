@@ -1,6 +1,12 @@
-const { JOGOO_LINKS_MAX_NUMBER, JOGOO_RATING_RETENTION_PERIOD, JOGOO_RATING_THRESHOLD } = require('./config');
+import { JOGOO_LINKS_MAX_NUMBER, JOGOO_RATING_RETENTION_PERIOD, JOGOO_RATING_THRESHOLD } from './config';
 
-class JogooUpdate {
+export class JogooUpdate {
+
+    /** @var JogooClient */
+    client;
+
+    /** @var string */
+    type;
 
     /**
      * @param {JogooClient} client
@@ -22,7 +28,7 @@ class JogooUpdate {
             await this.client.query(deleteExpiredQuery, [JOGOO_RATING_RETENTION_PERIOD]);
         }
 
-        let categories = [];
+        let categories: Array<number> = [];
         let categoryQuery = 'SELECT DISTINCT category FROM jogoo_ratings';
         await this.client.query(categoryQuery)
             .then((res) => {
@@ -104,5 +110,3 @@ GROUP BY A.product_id, B.product_id`;
     }
 
 }
-
-module.exports = JogooUpdate;

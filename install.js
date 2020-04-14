@@ -1,6 +1,5 @@
-const { Client } = require('pg');
-const { JOGOO_DB_CONFIG } = require('./lib/config');
-const client = new Client(JOGOO_DB_CONFIG);
+const { JogooClient } = require('./dist/src/index');
+const client = new JogooClient();
 client.connect();
 
 const installSQL = `BEGIN;
@@ -19,7 +18,8 @@ CREATE INDEX jogoo_links_item_id2_index ON jogoo_links(item_id2);
 CREATE INDEX jogoo_links_category ON jogoo_links(category);
 COMMIT;`;
 
-client.query(installSQL, (err, res) => {
-    console.log(err ? err.stack : 'Jogoo installation is complete. Thank you for choosing the Jogoo.');
-    client.end();
+client.query(installSQL).then((res) => {
+    console.log('Jogoo installation is complete. Thank you for choosing the Jogoo.');
+}).catch((err) => {
+    console.log(err.stack);
 });

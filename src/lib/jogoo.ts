@@ -1,6 +1,9 @@
-const { JOGOO_RATING_PURCHASED, JOGOO_RATING_CLICK_INITIAL, JOGOO_RATING_CLICK_INCREASE, JOGOO_RATING_NOT_INTERESTED } = require('./config');
+import { JOGOO_RATING_PURCHASED, JOGOO_RATING_CLICK_INITIAL, JOGOO_RATING_CLICK_INCREASE, JOGOO_RATING_NOT_INTERESTED } from './config';
 
-class Jogoo {
+export class Jogoo {
+
+    /** @var {JogooClient} */
+    client;
 
     /**
      * @param {JogooClient} client
@@ -131,5 +134,3 @@ class Jogoo {
     }
 
 }
-
-module.exports = Jogoo;

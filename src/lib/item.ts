@@ -1,11 +1,16 @@
-const { JOGOO_ITEMS_MAX_RETURN, JOGOO_RATING_THRESHOLD } = require('./config');
+import {JogooClient} from "./client";
 
-class JogooItem {
+import { JOGOO_ITEMS_MAX_RETURN, JOGOO_RATING_THRESHOLD } from './config';
+
+export class JogooItem {
+
+    /** @var {JogooClient} */
+    client;
 
     /**
      * @param {JogooClient} client
      */
-    constructor(client) {
+    constructor(client: JogooClient) {
         this.client = client;
     }
 
@@ -25,7 +30,7 @@ class JogooItem {
 
         return await this.client.query(query, args)
             .then((res) => {
-                let items = [];
+                let items: Array<number> = [];
                 let i = 0;
                 res.rows.some((item) => {
                     if (i >= opt_max) {
@@ -60,7 +65,7 @@ class JogooItem {
 
         return await this.client.query(query, args)
             .then((res) => {
-               let items = [];
+               let items: Array<object> = [];
                let i = 0;
                 res.rows.some((item) => {
                     if (i >= opt_max) {
@@ -97,7 +102,7 @@ class JogooItem {
 
         return await this.client.query(query, args)
             .then((res) => {
-                let items = [];
+                let items: Array<number> = [];
                 let i = 0;
                 res.rows.some((item) => {
                     if (i >= opt_max) {
@@ -132,7 +137,7 @@ class JogooItem {
 
         return await this.client.query(query, args)
             .then((res) => {
-                let items = [];
+                let items: Array<number> = [];
                 let i = 0;
                 res.rows.some((item) => {
                     if (i >= opt_max) {
@@ -199,7 +204,7 @@ class JogooItem {
 
         return await this.client.query(query, args)
             .then((res) => {
-                let items = [];
+                let items: Array<object> = [];
                 let i = 0;
                 res.rows.some((item) => {
                     if (i >= opt_max) {
@@ -224,5 +229,3 @@ class JogooItem {
     }
 
 }
-
-module.exports = JogooItem;
