@@ -1,5 +1,5 @@
 const { Client } = require('pg');
-const { JOGOO_DB_CONFIG } = require('./config');
+const { JOGOO_DB_CONFIG } = require('./lib/config');
 const client = new Client(JOGOO_DB_CONFIG);
 client.connect();
 
