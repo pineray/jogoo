@@ -1,6 +1,9 @@
-const jogoo = require('./lib/jogoo');
-const jogooItem = require('./lib/item');
+const Jogoo = require('./lib/jogoo');
+const JogooItem = require('./lib/item');
+const JogooClient = require('./lib/client');
+
 module.exports = {
-    jogoo: jogoo,
-    jogooItem: jogooItem
+    Jogoo: Jogoo,
+    JogooItem: JogooItem,
+    JogooClient: JogooClient,
 };
