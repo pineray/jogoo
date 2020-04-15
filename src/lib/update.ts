@@ -4,16 +4,16 @@ import { JogooClient } from "./client";
 export class JogooUpdate {
 
     /** @var JogooClient */
-    client;
+    client:JogooClient;
 
     /** @var string */
-    type;
+    type:string;
 
     /**
      * @param {JogooClient} client
      * @param {string} type
      */
-    constructor(client, type) {
+    constructor(client:JogooClient, type:string) {
         this.client = client;
         this.type = type;
     }
@@ -46,7 +46,7 @@ export class JogooUpdate {
      * @param {number} category
      * @return {Promise<void>}
      */
-    async updateCategory(category) {
+    async updateCategory(category:number) {
         try {
             await this.client.query('BEGIN');
             const deleteCategoryQuery = `DELETE FROM jogoo_links WHERE category = ${category}`;

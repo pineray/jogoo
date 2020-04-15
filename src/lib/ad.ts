@@ -89,8 +89,8 @@ export class JogooAd {
 
     /**
      * Get ads targeting a specified member.
-     * @param memberId
-     * @param opt_category
+     * @param {number} memberId
+     * @param {number} opt_category
      */
     async getTargetedAds(memberId:number, opt_category:number = 1) {
         const query = `SELECT a.ad_id, a.mini FROM jogoo_ads a

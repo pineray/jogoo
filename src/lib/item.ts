@@ -5,7 +5,7 @@ import { JOGOO_ITEMS_MAX_RETURN, JOGOO_RATING_THRESHOLD } from './config';
 export class JogooItem {
 
     /** @var {JogooClient} */
-    client;
+    client:JogooClient;
 
     /**
      * @param {JogooClient} client
@@ -22,7 +22,7 @@ export class JogooItem {
      * @param {number} opt_max
      * @return {Promise<Array>}
      */
-    async getLinkedItems(productId, opt_category = 1, opt_filter = false, opt_max = JOGOO_ITEMS_MAX_RETURN) {
+    async getLinkedItems(productId:number, opt_category:number = 1, opt_filter:boolean|Object = false, opt_max:number = JOGOO_ITEMS_MAX_RETURN) {
         const query = `SELECT item_id2 FROM jogoo_links WHERE item_id1 = ${productId} AND category = ${opt_category} ORDER BY cnt DESC`;
 
         return await this.client.query(query)
@@ -54,7 +54,7 @@ export class JogooItem {
      * @param {number} opt_max
      * @return {Promise<Array>}
      */
-    async getSlopedItems(productId, opt_minCount = 1, opt_category = 1, opt_filter = false, opt_max = JOGOO_ITEMS_MAX_RETURN) {
+    async getSlopedItems(productId:number, opt_minCount:number = 1, opt_category:number = 1, opt_filter:boolean|Object = false, opt_max:number = JOGOO_ITEMS_MAX_RETURN) {
         const query = `SELECT item_id2 AS product_id, (diff_slope / cnt) AS diff FROM jogoo_links
 WHERE item_id1 = ${productId} AND category = ${opt_category} AND cnt != 0 AND cnt >= ${opt_minCount} ORDER BY diff DESC`;
 
@@ -86,7 +86,7 @@ WHERE item_id1 = ${productId} AND category = ${opt_category} AND cnt != 0 AND cn
      * @param {number} opt_max
      * @return {Promise<Array>}
      */
-    async getRecommendedItems(memberId, opt_category = 1, opt_filter = false, opt_max = JOGOO_ITEMS_MAX_RETURN) {
+    async getRecommendedItems(memberId:number, opt_category:number = 1, opt_filter:boolean|Object = false, opt_max:number = JOGOO_ITEMS_MAX_RETURN) {
         const query = `SELECT l.item_id2, SUM(l.cnt * (r.rating - ${JOGOO_RATING_THRESHOLD})) AS cnter FROM jogoo_links l
 LEFT JOIN jogoo_ratings r ON l.item_id1 = r.product_id AND l.category = r.category
 WHERE r.member_id = ${memberId} AND r.category = ${opt_category} AND r.rating >= 0.0
@@ -116,13 +116,13 @@ ORDER BY cnter DESC`;
 
     /**
      * Get trigger items.
-     * @param memberId
-     * @param productId
-     * @param opt_category
-     * @param opt_max
+     * @param {number} memberId
+     * @param {number} productId
+     * @param {number} opt_category
+     * @param {number} opt_max
      * @return {Promise<Array>}
      */
-    async getTriggerItems(memberId, productId, opt_category = 1, opt_max = JOGOO_ITEMS_MAX_RETURN) {
+    async getTriggerItems(memberId:number, productId:number, opt_category:number = 1, opt_max:number = JOGOO_ITEMS_MAX_RETURN) {
         const query = `SELECT r.product_id FROM jogoo_ratings r LEFT JOIN jogoo_links l
 ON r.product_id = l.item_id2 AND l.category = r.category
 WHERE r.member_id = ${memberId} AND l.item_id1 = ${productId} AND r.category = ${opt_category} AND r.rating >= ${JOGOO_RATING_THRESHOLD} AND l.cnt > 0`;
@@ -152,7 +152,7 @@ WHERE r.member_id = ${memberId} AND l.item_id1 = ${productId} AND r.category = $
      * @param {number} opt_category
      * @return {Promise<boolean|number>}
      */
-    async getPredictedRate(memberId, productId, opt_category = 1) {
+    async getPredictedRate(memberId:number, productId:number, opt_category:number = 1) {
         const query = `SELECT SUM(r.rating * l.cnt - l.diff_slope) / SUM(l.cnt) AS ratio FROM jogoo_links l, jogoo_ratings r
 WHERE l.item_id1 = ${productId} AND r.member_id = ${memberId} AND l.category = ${opt_category}
 AND r.product_id = l.item_id2 AND r.category = l.category`;
@@ -184,7 +184,7 @@ AND r.product_id = l.item_id2 AND r.category = l.category`;
      * @param {number} opt_max
      * @return {Promise<Array>}
      */
-    async getPredictedAll(memberId, opt_category = 1, opt_filter = false, opt_max = JOGOO_ITEMS_MAX_RETURN) {
+    async getPredictedAll(memberId:number, opt_category:number = 1, opt_filter:boolean|Object = false, opt_max:number = JOGOO_ITEMS_MAX_RETURN) {
         const query = `SELECT l.item_id2, SUM(r.rating * l.cnt + l.diff_slope) / SUM(l.cnt) AS ratio
 FROM jogoo_links l LEFT JOIN jogoo_ratings r ON l.item_id1 = r.product_id AND l.category = r.category
 WHERE r.member_id = ${memberId} AND r.category = ${opt_category} AND r.rating >= 0.0 AND l.cnt != 0

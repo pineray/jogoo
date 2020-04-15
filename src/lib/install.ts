@@ -3,7 +3,7 @@ import {JogooClient} from "./client";
 export class JogooInstall {
 
     /** @var JogooClient */
-    client;
+    client:JogooClient;
 
     constructor(client: JogooClient) {
         this.client = client;

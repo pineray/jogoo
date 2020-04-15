@@ -16,7 +16,7 @@ export class JogooClient {
      * @param {Array<string|number>} args
      * @return {*|Promise<PermissionStatus>}
      */
-    query(query, args:Array<string|number> = []) {
+    query(query:string, args:Array<string|number> = []) {
         return this.connection.query(query, args);
     }
 
