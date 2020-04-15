@@ -64,7 +64,7 @@ export class Jogoo {
 
         await this.client.query(query)
             .then((res) => {
-                rating = res.rows;
+                rating = res;
             })
             .catch((err) => {
                 throw err;

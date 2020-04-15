@@ -29,12 +29,12 @@ export class JogooItem {
             .then((res) => {
                 let items: Array<number> = [];
                 let i = 0;
-                res.rows.some((item) => {
+                res.some((item) => {
                     if (i >= opt_max) {
                         return true;
                     }
                     if (!opt_filter || opt_filter[item.item_id2]) {
-                        items.push(item.item_id2);
+                        items.push(Number(item.item_id2));
                         i++;
                     }
                 });
@@ -63,7 +63,7 @@ WHERE item_id1 = ${productId} AND category = ${opt_category} AND cnt != 0 AND cn
                let items: Array<object> = [];
                let i = 0;
                 // @ts-ignore
-                res.rows.some((item) => {
+                res.some((item) => {
                     if (i >= opt_max) {
                         return true;
                     }
@@ -99,12 +99,12 @@ ORDER BY cnter DESC`;
             .then((res) => {
                 let items: Array<number> = [];
                 let i = 0;
-                res.rows.some((item) => {
+                res.some((item) => {
                     if (i >= opt_max) {
                         return true;
                     }
                     if (!opt_filter || opt_filter[item.item_id2]) {
-                        items.push(item.item_id2);
+                        items.push(Number(item.item_id2));
                         i++;
                     }
                 });
@@ -132,11 +132,11 @@ WHERE r.member_id = ${memberId} AND l.item_id1 = ${productId} AND r.category = $
             .then((res) => {
                 let items: Array<number> = [];
                 let i = 0;
-                res.rows.some((item) => {
+                res.some((item) => {
                     if (i >= opt_max) {
                         return true;
                     }
-                    items.push(item.product_id);
+                    items.push(Number(item.product_id));
                     i++;
                 });
                 return items;
@@ -160,10 +160,10 @@ AND r.product_id = l.item_id2 AND r.category = l.category`;
 
         return await this.client.query(query)
             .then((res) => {
-               if (res.rows.length === 0 || res.rows[0].cnter === 0) {
+               if (res.length === 0 || res[0].cnter === 0) {
                    return false;
                } else {
-                   let ratio = res.rows[0].ratio;
+                   let ratio = res[0].ratio;
                    if (ratio > 1.0) {
                        ratio = 1.0;
                    } else if (ratio < 0.0) {
@@ -197,7 +197,7 @@ ORDER BY ratio DESC`;
             .then((res) => {
                 let items: Array<object> = [];
                 let i = 0;
-                res.rows.some((item) => {
+                res.some((item) => {
                     if (i >= opt_max) {
                         return true;
                     }

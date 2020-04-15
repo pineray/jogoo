@@ -33,8 +33,8 @@ export class JogooUpdate {
         let categoryQuery = 'SELECT DISTINCT category FROM jogoo_ratings';
         await this.client.query(categoryQuery)
             .then((res) => {
-                res.rows.forEach((row) => {
-                    categories.push(row.category);
+                res.forEach((row) => {
+                    categories.push(Number(row.category));
                 });
             });
 

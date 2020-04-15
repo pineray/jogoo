@@ -13,11 +13,18 @@ export class JogooClient {
     /**
      * Run a query.
      * @param {string} query
-     * @param {Array<string|number>} args
-     * @return {*|Promise<PermissionStatus>}
+     * @return {*|Promise<Array<{ [key: string]: string|number }>>}
      */
-    query(query:string, args:Array<string|number> = []) {
-        return this.connection.query(query, args);
+    query(query:string):Promise<Array<{ [key: string]: string|number }>> {
+        return new Promise((resolve, reject) => {
+            this.connection.query(query)
+                .then((res) => {
+                    resolve(res.rows);
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        });
     }
 
 }

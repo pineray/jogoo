@@ -22,7 +22,7 @@ export class JogooAd {
 
         let recordQuery;
         await this.client.query(selectQuery).then(async (res) => {
-            if (res.rows.length > 0) {
+            if (res.length > 0) {
                 recordQuery = `UPDATE jogoo_ads SET mini = ${mini} WHERE ad_id = ${adId} AND category = ${opt_category}`;
             } else {
                 recordQuery = `INSERT INTO jogoo_ads(ad_id, category, mini) VALUES (${adId}, ${opt_category}, ${mini})`;
@@ -70,17 +70,17 @@ export class JogooAd {
 
         const adQuery = `SELECT mini FROM jogoo_ads WHERE ad_id = ${adId} AND category = ${opt_category}`;
         await this.client.query(adQuery).then(async (res) => {
-            if (res.rows.length != 1) {
+            if (res.length != 1) {
                 ret = {mini: 0, products: []};
             } else {
                 let products:Array<number> = [];
                 const productQuery = `SELECT product_id FROM jogoo_ads_products WHERE ad_id = ${adId} AND category = ${opt_category}`;
                 await this.client.query(productQuery).then((res) => {
-                    res.rows.forEach((row) => {
-                        products.push(row.product_id);
+                    res.forEach((row) => {
+                        products.push(Number(row.product_id));
                     });
                 });
-                ret = {mini: res.rows[0].mini, products: products};
+                ret = {mini: res[0].mini, products: products};
             }
         });
 
@@ -101,8 +101,8 @@ GROUP BY a.ad_id, a.mini HAVING COUNT(p.product_id) >= a.mini`;
         let ads:Array<number> = [];
 
         await this.client.query(query).then((res) => {
-            res.rows.forEach((row) => {
-                ads.push(row.ad_id);
+            res.forEach((row) => {
+                ads.push(Number(row.ad_id));
             });
         });
         return ads;
