@@ -1,7 +1,7 @@
 import { JOGOO_LINKS_MAX_NUMBER, JOGOO_RATING_RETENTION_PERIOD, JOGOO_RATING_THRESHOLD } from './config';
 import { JogooClient } from "./client";
 
-export class JogooUpdate {
+export class JogooAggregator {
 
     /** @var JogooClient */
     client:JogooClient;
@@ -108,7 +108,7 @@ GROUP BY A.product_id, B.product_id`;
 
 }
 
-export class JogooUpdateLinks extends JogooUpdate {
+export class JogooAggregateLinks extends JogooAggregator {
     constructor(client: JogooClient) {
         super(client, 'links');
     }
@@ -118,7 +118,7 @@ export class JogooUpdateLinks extends JogooUpdate {
     }
 }
 
-export class JogooUpdateSlope extends JogooUpdate {
+export class JogooAggregateSlope extends JogooAggregator {
     constructor(client: JogooClient) {
         super(client, 'slope');
     }
