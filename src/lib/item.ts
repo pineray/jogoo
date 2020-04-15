@@ -23,12 +23,9 @@ export class JogooItem {
      * @return {Promise<Array>}
      */
     async getLinkedItems(productId, opt_category = 1, opt_filter = false, opt_max = JOGOO_ITEMS_MAX_RETURN) {
-        const query = 'SELECT item_id2 FROM jogoo_links ' +
-            'WHERE item_id1 = $1::integer AND category = $2::integer ' +
-            'ORDER BY cnt DESC';
-        const args = [productId, opt_category];
+        const query = `SELECT item_id2 FROM jogoo_links WHERE item_id1 = ${productId} AND category = ${opt_category} ORDER BY cnt DESC`;
 
-        return await this.client.query(query, args)
+        return await this.client.query(query)
             .then((res) => {
                 let items: Array<number> = [];
                 let i = 0;
@@ -58,12 +55,10 @@ export class JogooItem {
      * @return {Promise<Array>}
      */
     async getSlopedItems(productId, opt_minCount = 1, opt_category = 1, opt_filter = false, opt_max = JOGOO_ITEMS_MAX_RETURN) {
-        const query = 'SELECT item_id2 AS product_id, (diff_slope / cnt) AS diff FROM jogoo_links ' +
-            'WHERE item_id1 = $1::integer AND category = $2::integer AND cnt != 0 AND cnt >= $3::integer ' +
-            'ORDER BY diff DESC';
-        const args = [productId, opt_category, opt_minCount];
+        const query = `SELECT item_id2 AS product_id, (diff_slope / cnt) AS diff FROM jogoo_links
+WHERE item_id1 = ${productId} AND category = ${opt_category} AND cnt != 0 AND cnt >= ${opt_minCount} ORDER BY diff DESC`;
 
-        return await this.client.query(query, args)
+        return await this.client.query(query)
             .then((res) => {
                let items: Array<object> = [];
                let i = 0;
@@ -92,15 +87,14 @@ export class JogooItem {
      * @return {Promise<Array>}
      */
     async getRecommendedItems(memberId, opt_category = 1, opt_filter = false, opt_max = JOGOO_ITEMS_MAX_RETURN) {
-        const query = 'SELECT l.item_id2, SUM(l.cnt * (r.rating - $3::float)) AS cnter ' +
-            'FROM jogoo_links l LEFT JOIN jogoo_ratings r ON l.item_id1 = r.product_id AND l.category = r.category ' +
-            'WHERE r.member_id = $1::integer AND r.category = $2::integer AND r.rating >= 0.0 ' +
-            'GROUP BY l.item_id2 HAVING SUM(l.cnt * (r.rating - $3::float)) > 0 ' +
-            'AND l.item_id2 NOT IN (SELECT product_id FROM jogoo_ratings WHERE member_id = $1::integer AND category = $2::integer) ' +
-            'ORDER BY cnter DESC';
-        const args = [memberId, opt_category, JOGOO_RATING_THRESHOLD];
+        const query = `SELECT l.item_id2, SUM(l.cnt * (r.rating - ${JOGOO_RATING_THRESHOLD})) AS cnter FROM jogoo_links l
+LEFT JOIN jogoo_ratings r ON l.item_id1 = r.product_id AND l.category = r.category
+WHERE r.member_id = ${memberId} AND r.category = ${opt_category} AND r.rating >= 0.0
+GROUP BY l.item_id2 HAVING SUM(l.cnt * (r.rating - ${JOGOO_RATING_THRESHOLD})) > 0
+AND l.item_id2 NOT IN (SELECT product_id FROM jogoo_ratings WHERE member_id = ${memberId} AND category = ${opt_category})
+ORDER BY cnter DESC`;
 
-        return await this.client.query(query, args)
+        return await this.client.query(query)
             .then((res) => {
                 let items: Array<number> = [];
                 let i = 0;
@@ -129,13 +123,11 @@ export class JogooItem {
      * @return {Promise<Array>}
      */
     async getTriggerItems(memberId, productId, opt_category = 1, opt_max = JOGOO_ITEMS_MAX_RETURN) {
-        const query = 'SELECT r.product_id FROM jogoo_ratings r LEFT JOIN jogoo_links l ' +
-            'ON r.product_id = l.item_id2 AND l.category = r.category ' +
-            'WHERE r.member_id = $1::integer AND l.item_id1 = $2::integer AND r.category = $3::integer ' +
-            'AND r.rating >= $4::float AND l.cnt > 0';
-        const args = [memberId, productId, opt_category, JOGOO_RATING_THRESHOLD];
+        const query = `SELECT r.product_id FROM jogoo_ratings r LEFT JOIN jogoo_links l
+ON r.product_id = l.item_id2 AND l.category = r.category
+WHERE r.member_id = ${memberId} AND l.item_id1 = ${productId} AND r.category = ${opt_category} AND r.rating >= ${JOGOO_RATING_THRESHOLD} AND l.cnt > 0`;
 
-        return await this.client.query(query, args)
+        return await this.client.query(query)
             .then((res) => {
                 let items: Array<number> = [];
                 let i = 0;
@@ -161,12 +153,11 @@ export class JogooItem {
      * @return {Promise<boolean|number>}
      */
     async getPredictedRate(memberId, productId, opt_category = 1) {
-        const query = 'SELECT SUM(r.rating * l.cnt - l.diff_slope) / SUM(l.cnt) AS ratio FROM jogoo_links l, jogoo_ratings r ' +
-            'WHERE l.item_id1 = $2::integer AND r.member_id = $1::integer AND l.category = $3::integer ' +
-            'AND r.product_id = l.item_id2 AND r.category = l.category';
-        const args = [memberId, productId, opt_category];
+        const query = `SELECT SUM(r.rating * l.cnt - l.diff_slope) / SUM(l.cnt) AS ratio FROM jogoo_links l, jogoo_ratings r
+WHERE l.item_id1 = ${productId} AND r.member_id = ${memberId} AND l.category = ${opt_category}
+AND r.product_id = l.item_id2 AND r.category = l.category`;
 
-        return await this.client.query(query, args)
+        return await this.client.query(query)
             .then((res) => {
                if (res.rows.length === 0 || res.rows[0].cnter === 0) {
                    return false;
@@ -194,15 +185,14 @@ export class JogooItem {
      * @return {Promise<Array>}
      */
     async getPredictedAll(memberId, opt_category = 1, opt_filter = false, opt_max = JOGOO_ITEMS_MAX_RETURN) {
-        const query = 'SELECT l.item_id2, SUM(r.rating * l.cnt + l.diff_slope) / SUM(l.cnt) AS ratio ' +
-            'FROM jogoo_links l LEFT JOIN jogoo_ratings r ON l.item_id1 = r.product_id AND l.category = r.category ' +
-            'WHERE r.member_id = $1::integer AND r.category = $2::integer AND r.rating >= 0.0 AND l.cnt != 0 ' +
-            'GROUP BY l.item_id2 ' +
-            'HAVING l.item_id2 NOT IN (SELECT product_id FROM jogoo_ratings WHERE member_id = $1::integer AND category = $2::integer) ' +
-            'ORDER BY ratio DESC';
-        const args = [memberId, opt_category];
+        const query = `SELECT l.item_id2, SUM(r.rating * l.cnt + l.diff_slope) / SUM(l.cnt) AS ratio
+FROM jogoo_links l LEFT JOIN jogoo_ratings r ON l.item_id1 = r.product_id AND l.category = r.category
+WHERE r.member_id = ${memberId} AND r.category = ${opt_category} AND r.rating >= 0.0 AND l.cnt != 0
+GROUP BY l.item_id2
+HAVING l.item_id2 NOT IN (SELECT product_id FROM jogoo_ratings WHERE member_id = ${memberId} AND category = ${opt_category})
+ORDER BY ratio DESC`;
 
-        return await this.client.query(query, args)
+        return await this.client.query(query)
             .then((res) => {
                 let items: Array<object> = [];
                 let i = 0;
