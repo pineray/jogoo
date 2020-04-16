@@ -1,13 +1,27 @@
-import { Pool } from 'pg';
-import { JOGOO_DB_CONFIG } from './config';
+import { JOGOO_DB_TYPE } from './config';
+import { JogooDialectInterface } from "../db/interface";
 
 export class JogooClient {
 
-    /** @var {Pool} */
-    connection:Pool;
+    dbType:string;
+    dialect:JogooDialectInterface;
 
     constructor() {
-        this.connection = new Pool(JOGOO_DB_CONFIG);
+        this.dbType = JOGOO_DB_TYPE;
+        if (this.dbType === 'postgresql') {
+            this.dbType = 'postgres';
+        }
+
+        let Dialect;
+        switch (this.dbType) {
+            case 'postgres':
+                Dialect = require('../db/postgres');
+                break;
+            default:
+                throw new Error(`The DB type ${this.dbType} is not supported. Support DB type: postgres.`);
+        }
+
+        this.dialect = new Dialect();
     }
 
     /**
@@ -16,42 +30,35 @@ export class JogooClient {
      * @return {*|Promise<Array<{ [key: string]: string|number }>>}
      */
     query(query:string):Promise<Array<{ [key: string]: string|number }>> {
-        return new Promise((resolve, reject) => {
-            this.connection.query(query)
-                .then((res) => {
-                    resolve(res.rows);
-                })
-                .catch((err) => {
-                    reject(err);
-                });
-        });
+        return this.dialect.query(query);
     }
 
     /**
      * End the connection.
      */
     end():void {
-        this.connection.end();
+        this.dialect.end();
     }
 
     /**
      * Begin a transaction.
      */
     beginTransaction():Promise<void> {
-        return this.connection.query('BEGIN');
+        return this.dialect.beginTransaction();
     }
 
     /**
      * Commit a transaction.
      */
     commit():Promise<void> {
-        return this.connection.query('COMMIT');
+        return this.dialect.commit();
     }
 
     /**
      * Rollback a transaction.
      */
     rollback():Promise<void> {
-        return this.connection.query('ROLLBACK');
+        return this.dialect.rollback();
     }
+
 }

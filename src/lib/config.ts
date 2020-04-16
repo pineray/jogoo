@@ -1,3 +1,4 @@
+export const JOGOO_DB_TYPE = process.env.hasOwnProperty('JOGOO_DB_TYPE') ? String(process.env.JOGOO_DB_TYPE) : 'postgres';
 export const JOGOO_DB_CONFIG = {
     user: process.env.JOGOO_DB_USER || 'postgres',
     host: process.env.JOGOO_DB_HOST || '127.0.0.1',
