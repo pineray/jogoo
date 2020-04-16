@@ -27,4 +27,31 @@ export class JogooClient {
         });
     }
 
+    /**
+     * End the connection.
+     */
+    end():void {
+        this.connection.end();
+    }
+
+    /**
+     * Begin a transaction.
+     */
+    beginTransaction():Promise<void> {
+        return this.connection.query('BEGIN');
+    }
+
+    /**
+     * Commit a transaction.
+     */
+    commit():Promise<void> {
+        return this.connection.query('COMMIT');
+    }
+
+    /**
+     * Rollback a transaction.
+     */
+    rollback():Promise<void> {
+        return this.connection.query('ROLLBACK');
+    }
 }

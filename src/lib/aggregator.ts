@@ -48,7 +48,7 @@ export class JogooAggregator {
      */
     async updateCategory(category:number) {
         try {
-            await this.client.query('BEGIN');
+            await this.client.beginTransaction();
             const deleteCategoryQuery = `DELETE FROM jogoo_links WHERE category = ${category}`;
             await this.client.query(deleteCategoryQuery);
 
@@ -99,9 +99,9 @@ GROUP BY A.product_id, B.product_id`;
             }
             await this.client.query(insertQuery);
 
-            await this.client.query('COMMIT');
+            await this.client.commit();
         } catch (err) {
-            await this.client.query('ROLLBACK');
+            await this.client.rollback();
             throw err;
         }
     }

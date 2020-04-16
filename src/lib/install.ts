@@ -10,7 +10,10 @@ export class JogooInstall {
     }
 
     async do() {
-        const installSQL = `BEGIN;
+        try {
+            await this.client.beginTransaction();
+
+            const installSQL = `BEGIN;
 CREATE TABLE jogoo_ratings(member_id INTEGER,product_id INTEGER,category INTEGER,rating FLOAT,ts TIMESTAMP);
 CREATE INDEX jogoo_ratings_member_id_index ON jogoo_ratings(member_id);
 CREATE INDEX jogoo_ratings_product_id_index ON jogoo_ratings(product_id);
@@ -26,11 +29,13 @@ CREATE INDEX jogoo_links_item_id2_index ON jogoo_links(item_id2);
 CREATE INDEX jogoo_links_category ON jogoo_links(category);
 COMMIT;`;
 
-        this.client.query(installSQL).then(() => {
+            await this.client.query(installSQL);
+            await this.client.commit();
             console.log('Jogoo installation is complete. Thank you for choosing the Jogoo.');
-        }).catch((err) => {
+        } catch (err) {
+            await this.client.rollback();
             console.log(err.stack);
-        });
+        }
     }
 
 }
