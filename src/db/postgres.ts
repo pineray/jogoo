@@ -1,13 +1,12 @@
 import { Pool } from 'pg';
 import { JogooDialectInterface } from './interface';
-import { JOGOO_DB_CONFIG } from "../lib/config";
 
 class JogooDialectPostgres implements JogooDialectInterface {
     /** @var {Pool} */
     connection:Pool;
 
-    constructor() {
-        this.connection = new Pool(JOGOO_DB_CONFIG);
+    constructor(options:object) {
+        this.connection = new Pool(options);
     }
 
     /**

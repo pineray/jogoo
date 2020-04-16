@@ -1,11 +1,15 @@
 export const JOGOO_DB_TYPE = process.env.hasOwnProperty('JOGOO_DB_TYPE') ? String(process.env.JOGOO_DB_TYPE) : 'postgres';
-export const JOGOO_DB_CONFIG = {
-    user: process.env.JOGOO_DB_USER || 'postgres',
-    host: process.env.JOGOO_DB_HOST || '127.0.0.1',
-    database: process.env.JOGOO_DB_NAME || 'jogoodb',
-    password: process.env.JOGOO_DB_AUTH || 'postgres',
-    port: process.env.JOGOO_DB_PORT || 5432
-};
+export const JOGOO_DB_USER = process.env.hasOwnProperty('JOGOO_DB_USER') ? String(process.env.JOGOO_DB_USER) : '';
+export const JOGOO_DB_HOST = process.env.hasOwnProperty('JOGOO_DB_HOST') ? String(process.env.JOGOO_DB_HOST) : 'localhost';
+export const JOGOO_DB_NAME = process.env.hasOwnProperty('JOGOO_DB_NAME') ? String(process.env.JOGOO_DB_NAME) : '';
+export const JOGOO_DB_AUTH = process.env.hasOwnProperty('JOGOO_DB_AUTH') ? String(process.env.JOGOO_DB_AUTH) : '';
+let dbPort;
+if (process.env.hasOwnProperty('JOGOO_DB_PORT')) {
+    dbPort = Number(process.env.JOGOO_DB_PORT);
+} else if (JOGOO_DB_TYPE === 'postgres' || JOGOO_DB_TYPE === 'postgresql') {
+    dbPort = 5432;
+}
+export const JOGOO_DB_PORT = dbPort;
 
 export const JOGOO_ITEMS_MAX_RETURN = process.env.hasOwnProperty('JOGOO_ITEMS_MAX_RETURN') ? Number(process.env.JOGOO_ITEMS_MAX_RETURN) : 1000000;
 export const JOGOO_LINKS_MAX_NUMBER = process.env.hasOwnProperty('JOGOO_LINKS_MAX_NUMBER') ? Number(process.env.JOGOO_LINKS_MAX_NUMBER) : 30;
