@@ -8,6 +8,8 @@ if (process.env.hasOwnProperty('JOGOO_DB_PORT')) {
     dbPort = Number(process.env.JOGOO_DB_PORT);
 } else if (JOGOO_DB_TYPE === 'postgres' || JOGOO_DB_TYPE === 'postgresql') {
     dbPort = 5432;
+} else if (JOGOO_DB_TYPE === 'mariadb' || JOGOO_DB_TYPE === 'mysql') {
+    dbPort = 3306;
 }
 export const JOGOO_DB_PORT = dbPort;
 

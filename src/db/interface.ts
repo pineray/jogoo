@@ -1,6 +1,12 @@
 export interface JogooDialectInterface {
 
     /**
+     * Connect the database.
+     * @return Promise<void>
+     */
+    connect():Promise<void>;
+
+    /**
      * Run a query.
      * @param {string} query
      * @return {*|Promise<Array<{ [key: string]: string|number }>>}

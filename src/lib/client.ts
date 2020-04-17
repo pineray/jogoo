@@ -49,6 +49,10 @@ export class JogooClient {
 
         let Dialect;
         switch (this.dbType) {
+            case 'mariadb':
+            case 'mysql':
+                Dialect = require('../db/mysql');
+                break;
             case 'postgres':
                 Dialect = require('../db/postgres');
                 break;
@@ -59,13 +63,20 @@ export class JogooClient {
         this.dialect = new Dialect(this.options);
     }
 
+    connect() {
+        return this.dialect.connect();
+    }
+
     /**
      * Run a query.
      * @param {string} query
      * @return {*|Promise<Array<{ [key: string]: string|number }>>}
      */
     query(query:string):Promise<Array<{ [key: string]: string|number }>> {
-        return this.dialect.query(query);
+        return this.dialect.query(query).catch((err) => {
+            this.end();
+            throw err;
+        });
     }
 
     /**

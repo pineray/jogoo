@@ -15,11 +15,14 @@
   },
   "homepage": "https://github.com/pineray/jogoo#readme",
   "dependencies": {
-    "pg": "^8.0.0",
     "tslib": "^1.11.1"
   },
   "devDependencies": {
-    "@types/node": "^13.11.1"
+    "@types/mysql2": "github:types/mysql2",
+    "@types/node": "^13.11.1",
+    "@types/pg": "^7.14.3",
+    "mysql2": "^2.1.0",
+    "pg": "^8.0.0"
   },
   "scripts": {
     "build": "tsc --p tsconfig.json"

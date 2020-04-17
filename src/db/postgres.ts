@@ -10,6 +10,14 @@ class JogooDialectPostgres implements JogooDialectInterface {
     }
 
     /**
+     * Connect the database.
+     * @return Promise<void>
+     */
+    async connect(): Promise<void> {
+        return;
+    }
+
+    /**
      * Run a query.
      * @param {string} query
      * @return {*|Promise<Array<{ [key: string]: string|number }>>}
@@ -37,21 +45,21 @@ class JogooDialectPostgres implements JogooDialectInterface {
      * Begin a transaction.
      */
     beginTransaction():Promise<void> {
-        return this.connection.query('BEGIN');
+        return this.connection.query('BEGIN').then(() => {return});
     }
 
     /**
      * Commit a transaction.
      */
     commit():Promise<void> {
-        return this.connection.query('COMMIT');
+        return this.connection.query('COMMIT').then(() => {return});
     }
 
     /**
      * Rollback a transaction.
      */
     rollback():Promise<void> {
-        return this.connection.query('ROLLBACK');
+        return this.connection.query('ROLLBACK').then(() => {return});
     }
 }
 
