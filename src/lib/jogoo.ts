@@ -6,11 +6,32 @@ export class Jogoo {
     /** @var {JogooClient} */
     client:JogooClient;
 
+    /** @var {Object} */
+    ratings: {purchased:number, clickInitial:number, clickIncrease:number, notInterested:number} = {
+        purchased: JOGOO_RATING_PURCHASED,
+        clickInitial: JOGOO_RATING_CLICK_INITIAL,
+        clickIncrease: JOGOO_RATING_CLICK_INCREASE,
+        notInterested: JOGOO_RATING_NOT_INTERESTED
+    };
+
     /**
      * @param {JogooClient} client
+     * @param {Object} options
      */
-    constructor(client:JogooClient) {
+    constructor(client:JogooClient, options?:{[key: string]: string|number}) {
         this.client = client;
+        if (options !== undefined && options.hasOwnProperty('ratingPurchased')) {
+            this.ratings.purchased = Number(options.ratingPurchased);
+        }
+        if (options !== undefined && options.hasOwnProperty('clickInitial')) {
+            this.ratings.clickInitial = Number(options.clickInitial);
+        }
+        if (options !== undefined && options.hasOwnProperty('clickIncrease')) {
+            this.ratings.clickIncrease = Number(options.clickIncrease);
+        }
+        if (options !== undefined && options.hasOwnProperty('notInterested')) {
+            this.ratings.notInterested = Number(options.notInterested);
+        }
     }
 
     /**
@@ -97,16 +118,16 @@ export class Jogoo {
      */
     async automaticRating(memberId:number, productId:number, opt_purchase:boolean = false, opt_category:number = 1) {
         if (opt_purchase) {
-            return this.setRating(memberId, productId, JOGOO_RATING_PURCHASED, opt_category);
+            return this.setRating(memberId, productId, this.ratings.purchased, opt_category);
         } else {
             let existing = await this.getRating(memberId, productId, true, opt_category).catch((err) => {
                 throw err;
             });
 
             if (existing.length === 0) {
-                return this.setRating(memberId, productId, JOGOO_RATING_CLICK_INITIAL, opt_category);
-            } else if (existing[0].rating < JOGOO_RATING_PURCHASED) {
-                return this.setRating(memberId, productId, existing[0].rating + JOGOO_RATING_CLICK_INCREASE, opt_category);
+                return this.setRating(memberId, productId, this.ratings.clickInitial, opt_category);
+            } else if (existing[0].rating < this.ratings.purchased) {
+                return this.setRating(memberId, productId, existing[0].rating + this.ratings.clickIncrease, opt_category);
             }
             return true;
         }
@@ -120,7 +141,7 @@ export class Jogoo {
      * @return {Promise<boolean>}
      */
     setNotInterested(memberId:number, productId:number, opt_category:number = 1) {
-        return this.setRating(memberId, productId, JOGOO_RATING_NOT_INTERESTED, opt_category);
+        return this.setRating(memberId, productId, this.ratings.notInterested, opt_category);
     }
 
 }

@@ -3,19 +3,38 @@ import { JogooClient } from "./client";
 
 export class JogooAggregator {
 
-    /** @var JogooClient */
+    /** @var {JogooClient} */
     client:JogooClient;
 
-    /** @var string */
+    /** @var {string} */
     type:string;
+
+    /** @var {number} */
+    linksMaxNumber:number = JOGOO_LINKS_MAX_NUMBER;
+
+    /** @var {string} */
+    retentionPeriod:string = JOGOO_RATING_RETENTION_PERIOD;
+
+    /** @var {number} */
+    threshold:number = JOGOO_RATING_THRESHOLD;
 
     /**
      * @param {JogooClient} client
      * @param {string} type
+     * @param {Object} options
      */
-    constructor(client:JogooClient, type:string) {
+    constructor(client:JogooClient, type:string, options?:{[key: string]: string|number}) {
         this.client = client;
         this.type = type;
+        if (options !== undefined && options.hasOwnProperty('linksMaxNumber')) {
+            this.linksMaxNumber = Number(options.linksMaxNumber);
+        }
+        if (options !== undefined && options.hasOwnProperty('retentionPeriod')) {
+            this.retentionPeriod = String(options.retentionPeriod);
+        }
+        if (options !== undefined && options.hasOwnProperty('threshold')) {
+            this.threshold = Number(options.threshold);
+        }
     }
 
     /**
@@ -24,8 +43,8 @@ export class JogooAggregator {
      */
     async updateAll() {
         // Delete older ratings than retention period.
-        if (JOGOO_RATING_RETENTION_PERIOD.length > 0) {
-            const deleteExpiredQuery = `DELETE FROM jogoo_ratings WHERE ts < current_timestamp + '${JOGOO_RATING_RETENTION_PERIOD}'`;
+        if (this.retentionPeriod.length > 0) {
+            const deleteExpiredQuery = `DELETE FROM jogoo_ratings WHERE ts < current_timestamp + '${this.retentionPeriod}'`;
             await this.client.query(deleteExpiredQuery);
         }
 
@@ -53,19 +72,19 @@ export class JogooAggregator {
             await this.client.query(deleteCategoryQuery);
 
             let insertQuery;
-            if (JOGOO_LINKS_MAX_NUMBER > 0) {
+            if (this.linksMaxNumber > 0) {
                 if (this.type === 'links') {
                     insertQuery = `INSERT INTO jogoo_links (item_id1,item_id2,category,cnt,diff_slope)
 SELECT item_id1, item_id2, ${category}, cnt, 0
 FROM (
     SELECT A.product_id AS item_id1, B.product_id AS item_id2, count(*) AS cnt, row_number() OVER (PARTITION BY A.product_id ORDER BY count(*) DESC, B.product_id DESC) AS rank
-    FROM (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= ${JOGOO_RATING_THRESHOLD} AND category=${category}) A
-    LEFT JOIN (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= ${JOGOO_RATING_THRESHOLD} AND category=${category}) B
+    FROM (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= ${this.threshold} AND category=${category}) A
+    LEFT JOIN (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= ${this.threshold} AND category=${category}) B
     ON A.member_id = B.member_id AND A.product_id <> B.product_id
     GROUP BY A.product_id, B.product_id
     ORDER BY item_id2 DESC
 ) CNT
-WHERE rank <= ${JOGOO_LINKS_MAX_NUMBER}`;
+WHERE rank <= ${this.linksMaxNumber}`;
                 } else {
                     insertQuery = `INSERT INTO jogoo_links (item_id1,item_id2,category,cnt,diff_slope)
 SELECT item_id1, item_id2, ${category}, cnt, diff_slope
@@ -78,14 +97,14 @@ FROM (
     GROUP BY A.product_id, B.product_id
     ORDER BY item_id2 DESC
 ) CNT
-WHERE rank <= ${JOGOO_LINKS_MAX_NUMBER}`;
+WHERE rank <= ${this.linksMaxNumber}`;
                 }
             } else {
                 if (this.type === 'links') {
                     insertQuery = `INSERT INTO jogoo_links (item_id1,item_id2,category,cnt,diff_slope)
 SELECT A.product_id, B.product_id, ${category}, count(*), 0
-FROM (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= ${JOGOO_RATING_THRESHOLD} AND category=${category}) A
-LEFT JOIN (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= ${JOGOO_RATING_THRESHOLD} AND category=${category}) B
+FROM (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= ${this.threshold} AND category=${category}) A
+LEFT JOIN (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= ${this.threshold} AND category=${category}) B
 ON A.member_id = B.member_id AND A.product_id <> B.product_id
 GROUP BY A.product_id, B.product_id`;
                 } else {
@@ -109,8 +128,8 @@ GROUP BY A.product_id, B.product_id`;
 }
 
 export class JogooAggregateLinks extends JogooAggregator {
-    constructor(client: JogooClient) {
-        super(client, 'links');
+    constructor(client: JogooClient, options?:{[key: string]: string|number}) {
+        super(client, 'links', options);
     }
 
     async do() {
@@ -119,8 +138,8 @@ export class JogooAggregateLinks extends JogooAggregator {
 }
 
 export class JogooAggregateSlope extends JogooAggregator {
-    constructor(client: JogooClient) {
-        super(client, 'slope');
+    constructor(client: JogooClient, options?:{[key: string]: string|number}) {
+        super(client, 'slope', options);
     }
 
     async do() {

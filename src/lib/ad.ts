@@ -3,11 +3,17 @@ import { JOGOO_RATING_THRESHOLD } from "./config";
 
 export class JogooAd {
 
-    /** @var JogooClient */
+    /** @var {JogooClient} */
     client:JogooClient;
 
-    constructor(client: JogooClient) {
+    /** @var {number} */
+    threshold:number = JOGOO_RATING_THRESHOLD;
+
+    constructor(client: JogooClient, options?:{[key: string]: string|number}) {
         this.client = client;
+        if (options !== undefined && options.hasOwnProperty('threshold')) {
+            this.threshold = Number(options.threshold);
+        }
     }
 
     /**
@@ -96,7 +102,7 @@ export class JogooAd {
         const query = `SELECT a.ad_id, a.mini FROM jogoo_ads a
 LEFT JOIN jogoo_ads_products p ON p.category = a.category AND a.ad_id = p.ad_id
 LEFT JOIN jogoo_ratings r ON a.category = r.category AND p.product_id = r.product_id
-WHERE r.member_id = ${memberId} AND r.rating >= ${JOGOO_RATING_THRESHOLD} AND r.category = ${opt_category}
+WHERE r.member_id = ${memberId} AND r.rating >= ${this.threshold} AND r.category = ${opt_category}
 GROUP BY a.ad_id, a.mini HAVING COUNT(p.product_id) >= a.mini`;
         let ads:Array<number> = [];
 
