@@ -1,5 +1,5 @@
 # Jogoo
-Jogoo is collaborative filtering library. This is porting Jogoo to node.js.
+Jogoo is collaborative filtering library. This is porting Vogoo PHP Lib to node.js.
 
 [![npm version](https://badgen.net/npm/v/jogoo)](https://www.npmjs.com/package/jogoo)
 
