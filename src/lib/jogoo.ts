@@ -144,4 +144,37 @@ export class Jogoo {
         return this.setRating(memberId, productId, this.ratings.notInterested, opt_category);
     }
 
+    /**
+     * Convert ratings from a member to another.
+     * @param {number} fromMemberId
+     * @param {number} toMemberId
+     * @param {boolean} opt_clear
+     * @param {number} opt_category
+     */
+    async convertMember(fromMemberId:number, toMemberId:number, opt_clear:boolean = false, opt_category:number = 1) {
+        try {
+            await this.client.beginTransaction();
+
+            let deleteQuery = `DELETE FROM jogoo_ratings WHERE member_id = ${toMemberId} 
+AND product_id IN (SELECT product_id FROM jogoo_ratings WHERE member_id = ${fromMemberId} AND category = ${opt_category}) 
+AND category = ${opt_category}`;
+            await this.client.query(deleteQuery);
+
+            let insertQuery = `INSERT INTO jogoo_ratings (member_id, product_id, category, rating, ts) 
+SELECT ${toMemberId}, F.product_id, ${opt_category}, F.rating, F.ts FROM jogoo_ratings F 
+WHERE F.member_id = ${fromMemberId} AND F.category = ${opt_category}`;
+            await this.client.query(insertQuery);
+
+            if (opt_clear) {
+                let clearQuery = `DELETE FROM jogoo_ratings WHERE member_id = ${fromMemberId} AND category = ${opt_category}`;
+                await this.client.query(clearQuery);
+            }
+
+            await this.client.commit();
+        } catch (err) {
+            await this.client.rollback();
+            throw err;
+        }
+    }
+
 }
