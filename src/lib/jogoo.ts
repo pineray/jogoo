@@ -150,9 +150,29 @@ export class Jogoo {
      */
     async deleteRating(memberId:number, productId:number, opt_category:number = 1) {
         let query = `DELETE FROM jogoo_ratings WHERE member_id = ${memberId} AND product_id = ${productId} AND category = ${opt_category}`;
-        this.client.query(query).catch((err) => {
-            throw err;
-        });
+        await this.client.query(query);
+    }
+
+    /**
+     * Delete ratings inputted by a specified member.
+     * @param {number} memberId
+     * @param {number} opt_category
+     * @return {Promise<void>}
+     */
+    async deleteMemberRatings(memberId:number, opt_category:number = 1) {
+        let query = `DELETE FROM jogoo_ratings WHERE member_id = ${memberId} AND category = ${opt_category}`;
+        await this.client.query(query);
+    }
+
+    /**
+     * Delete ratings to a specified product.
+     * @param {number} productId
+     * @param {number} opt_category
+     * @return {Promise<void>}
+     */
+    async deleteProductRatings(productId:number, opt_category:number = 1) {
+        let query = `DELETE FROM jogoo_ratings WHERE product_id = ${productId} AND category = ${opt_category}`;
+        await this.client.query(query);
     }
 
     /**
