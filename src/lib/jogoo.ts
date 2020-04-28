@@ -3,6 +3,7 @@ import {
     JOGOO_RATING_CLICK_INITIAL,
     JOGOO_RATING_CLICK_INCREASE,
     JOGOO_RATING_NOT_INTERESTED,
+    JOGOO_RATING_RETENTION_PERIOD,
     JOGOO_RATING_THRESHOLD,
     JOGOO_LINKS_MAX_NUMBER,
     JOGOO_LINKS_REALTIME_LINK,
@@ -24,11 +25,12 @@ export class Jogoo {
     };
 
     /** @var {Object} */
-    ratings: {purchased:number, clickInitial:number, clickIncrease:number, notInterested:number, threshold:number} = {
+    ratings: {purchased:number, clickInitial:number, clickIncrease:number, notInterested:number, retentionPeriod:string, threshold:number} = {
         purchased: JOGOO_RATING_PURCHASED,
         clickInitial: JOGOO_RATING_CLICK_INITIAL,
         clickIncrease: JOGOO_RATING_CLICK_INCREASE,
         notInterested: JOGOO_RATING_NOT_INTERESTED,
+        retentionPeriod: JOGOO_RATING_RETENTION_PERIOD,
         threshold: JOGOO_RATING_THRESHOLD
     };
 
@@ -49,6 +51,9 @@ export class Jogoo {
         }
         if (options !== undefined && options.hasOwnProperty('notInterested')) {
             this.ratings.notInterested = Number(options.notInterested);
+        }
+        if (options !== undefined && options.hasOwnProperty('retentionPeriod')) {
+            this.ratings.retentionPeriod = String(options.retentionPeriod);
         }
         if (options !== undefined && options.hasOwnProperty('threshold')) {
             this.ratings.threshold = Number(options.threshold);
@@ -148,6 +153,16 @@ export class Jogoo {
         this.client.query(query).catch((err) => {
             throw err;
         });
+    }
+
+    /**
+     * Delete older ratings than retention period.
+     */
+    async deleteOutdatedRatings() {
+        if (this.ratings.retentionPeriod.length > 0) {
+            const deleteExpiredQuery = `DELETE FROM jogoo_ratings WHERE ts < current_timestamp + '${this.ratings.retentionPeriod}'`;
+            await this.client.query(deleteExpiredQuery);
+        }
     }
 
     /**

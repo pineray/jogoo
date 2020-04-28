@@ -1,5 +1,6 @@
 import { JOGOO_LINKS_MAX_NUMBER, JOGOO_RATING_RETENTION_PERIOD, JOGOO_RATING_THRESHOLD } from './config';
 import { JogooClient } from "./client";
+import { Jogoo } from "./jogoo";
 
 class JogooAggregator {
 
@@ -44,8 +45,8 @@ class JogooAggregator {
     async updateAll() {
         // Delete older ratings than retention period.
         if (this.retentionPeriod.length > 0) {
-            const deleteExpiredQuery = `DELETE FROM jogoo_ratings WHERE ts < current_timestamp + '${this.retentionPeriod}'`;
-            await this.client.query(deleteExpiredQuery);
+            let jogoo = new Jogoo(this.client, {retentionPeriod: this.retentionPeriod});
+            await jogoo.deleteOutdatedRatings();
         }
 
         let categories: Array<number> = [];
