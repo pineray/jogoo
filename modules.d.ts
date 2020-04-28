@@ -7,6 +7,8 @@ declare namespace NodeJS {
         JOGOO_DB_PORT: number;
         JOGOO_ITEMS_MAX_RETURN: number;
         JOGOO_LINKS_MAX_NUMBER: number;
+        JOGOO_LINKS_REALTIME_LINK: boolean;
+        JOGOO_LINKS_REALTIME_SLOPE: boolean;
         JOGOO_RATING_PURCHASED: number;
         JOGOO_RATING_CLICK_INITIAL: number;
         JOGOO_RATING_CLICK_INCREASE: number;

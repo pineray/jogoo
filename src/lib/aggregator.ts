@@ -1,7 +1,7 @@
 import { JOGOO_LINKS_MAX_NUMBER, JOGOO_RATING_RETENTION_PERIOD, JOGOO_RATING_THRESHOLD } from './config';
 import { JogooClient } from "./client";
 
-export class JogooAggregator {
+class JogooAggregator {
 
     /** @var {JogooClient} */
     client:JogooClient;
@@ -111,6 +111,100 @@ GROUP BY A.product_id, B.product_id`;
                     insertQuery = `INSERT INTO jogoo_links (item_id1,item_id2,category,cnt,diff_slope)
 SELECT A.product_id, B.product_id, ${category}, count(*), SUM(B.rating - A.rating)
 FROM (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= 0 AND category=${category}) A
+LEFT JOIN (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= 0 AND category=${category}) B
+ON A.member_id = B.member_id AND A.product_id <> B.product_id
+GROUP BY A.product_id, B.product_id`;
+                }
+            }
+            await this.client.query(insertQuery);
+
+            await this.client.commit();
+        } catch (err) {
+            await this.client.rollback();
+            throw err;
+        }
+    }
+
+    /**
+     * Update links without whole aggregation.
+     * @param memberId
+     * @param productId
+     * @param category
+     */
+    async partialUpdate(memberId:number, productId:number, category:number) {
+        try {
+            await this.client.beginTransaction();
+
+            let deletionRating;
+            if (this.type === 'links') {
+                deletionRating = this.threshold;
+            } else {
+                deletionRating = 0;
+            }
+            const deleteCategoryQuery = `DELETE FROM jogoo_links WHERE category = ${category} 
+AND item_id1 IN (
+    SELECT product_id FROM jogoo_ratings WHERE member_id = ${memberId} OR member_id IN (
+        SELECT member_id FROM jogoo_ratings WHERE product_id = ${productId} AND rating >= ${deletionRating}
+    )
+)`;
+            await this.client.query(deleteCategoryQuery);
+
+            let insertQuery;
+            if (this.linksMaxNumber > 0) {
+                if (this.type === 'links') {
+                    insertQuery = `INSERT INTO jogoo_links (item_id1,item_id2,category,cnt,diff_slope)
+SELECT item_id1, item_id2, ${category}, cnt, 0
+FROM (
+    SELECT A.product_id AS item_id1, B.product_id AS item_id2, count(*) AS cnt, row_number() OVER (PARTITION BY A.product_id ORDER BY count(*) DESC, B.product_id DESC) AS rank
+    FROM (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= ${this.threshold} AND category=${category} AND product_id IN (
+        SELECT product_id FROM jogoo_ratings WHERE member_id = ${memberId} OR member_id IN (
+            SELECT member_id FROM jogoo_ratings WHERE product_id = ${productId} AND rating >= ${this.threshold}
+        )
+    )) A
+    LEFT JOIN (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= ${this.threshold} AND category=${category}) B
+    ON A.member_id = B.member_id AND A.product_id <> B.product_id
+    GROUP BY A.product_id, B.product_id
+    ORDER BY item_id2 DESC
+) CNT
+WHERE rank <= ${this.linksMaxNumber}`;
+                } else {
+                    insertQuery = `INSERT INTO jogoo_links (item_id1,item_id2,category,cnt,diff_slope)
+SELECT item_id1, item_id2, ${category}, cnt, diff_slope
+FROM (
+    SELECT A.product_id AS item_id1, B.product_id AS item_id2, count(*) AS cnt, row_number() OVER (PARTITION BY A.product_id ORDER BY count(*) DESC, B.product_id DESC) AS rank,
+    SUM(B.rating - A.rating) AS diff_slope 
+    FROM (SELECT product_id, member_id, rating FROM jogoo_ratings WHERE rating >= 0 AND category=${category} AND product_id IN (
+        SELECT product_id FROM jogoo_ratings WHERE member_id = ${memberId} OR member_id IN (
+            SELECT member_id FROM jogoo_ratings WHERE product_id = ${productId} AND rating >= 0
+        )
+    )) A
+    LEFT JOIN (SELECT product_id, member_id, rating FROM jogoo_ratings WHERE rating >= 0 AND category=${category}) B
+    ON A.member_id = B.member_id AND A.product_id <> B.product_id
+    GROUP BY A.product_id, B.product_id
+    ORDER BY item_id2 DESC
+) CNT
+WHERE rank <= ${this.linksMaxNumber}`;
+                }
+            } else {
+                if (this.type === 'links') {
+                    insertQuery = `INSERT INTO jogoo_links (item_id1,item_id2,category,cnt,diff_slope)
+SELECT A.product_id, B.product_id, ${category}, count(*), 0
+FROM (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= ${this.threshold} AND category=${category} AND product_id IN (
+    SELECT product_id FROM jogoo_ratings WHERE member_id = ${memberId} OR member_id IN (
+        SELECT member_id FROM jogoo_ratings WHERE product_id = ${productId} AND rating >= ${this.threshold}
+    )
+)) A
+LEFT JOIN (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= ${this.threshold} AND category=${category}) B
+ON A.member_id = B.member_id AND A.product_id <> B.product_id
+GROUP BY A.product_id, B.product_id`;
+                } else {
+                    insertQuery = `INSERT INTO jogoo_links (item_id1,item_id2,category,cnt,diff_slope)
+SELECT A.product_id, B.product_id, ${category}, count(*), SUM(B.rating - A.rating)
+FROM (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= 0 AND category=${category} AND product_id IN (
+    SELECT product_id FROM jogoo_ratings WHERE member_id = ${memberId} OR member_id IN (
+        SELECT member_id FROM jogoo_ratings WHERE product_id = ${productId} AND rating >= 0
+    )
+)) A
 LEFT JOIN (SELECT product_id, member_id FROM jogoo_ratings WHERE rating >= 0 AND category=${category}) B
 ON A.member_id = B.member_id AND A.product_id <> B.product_id
 GROUP BY A.product_id, B.product_id`;

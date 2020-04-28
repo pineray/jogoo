@@ -15,6 +15,8 @@ export const JOGOO_DB_PORT = dbPort;
 
 export const JOGOO_ITEMS_MAX_RETURN = process.env.hasOwnProperty('JOGOO_ITEMS_MAX_RETURN') ? Number(process.env.JOGOO_ITEMS_MAX_RETURN) : 1000000;
 export const JOGOO_LINKS_MAX_NUMBER = process.env.hasOwnProperty('JOGOO_LINKS_MAX_NUMBER') ? Number(process.env.JOGOO_LINKS_MAX_NUMBER) : 30;
+export const JOGOO_LINKS_REALTIME_LINK = process.env.hasOwnProperty('JOGOO_LINKS_REALTIME_LINK') ? Boolean(process.env.JOGOO_LINKS_REALTIME_LINK) : false;
+export const JOGOO_LINKS_REALTIME_SLOPE = process.env.hasOwnProperty('JOGOO_LINKS_REALTIME_SLOPE') ? Boolean(process.env.JOGOO_LINKS_REALTIME_SLOPE) : false;
 export const JOGOO_RATING_PURCHASED = process.env.hasOwnProperty('JOGOO_RATING_PURCHASED') ? Number(process.env.JOGOO_RATING_PURCHASED) : 1.0;
 export const JOGOO_RATING_CLICK_INITIAL = process.env.hasOwnProperty('JOGOO_RATING_CLICK_INITIAL') ? Number(process.env.JOGOO_RATING_CLICK_INITIAL) : 0.7;
 export const JOGOO_RATING_CLICK_INCREASE = process.env.hasOwnProperty('JOGOO_RATING_CLICK_INCREASE') ? Number(process.env.JOGOO_RATING_CLICK_INCREASE) : 0.01;

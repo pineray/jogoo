@@ -1,5 +1,15 @@
-import { JOGOO_RATING_PURCHASED, JOGOO_RATING_CLICK_INITIAL, JOGOO_RATING_CLICK_INCREASE, JOGOO_RATING_NOT_INTERESTED } from './config';
+import {
+    JOGOO_RATING_PURCHASED,
+    JOGOO_RATING_CLICK_INITIAL,
+    JOGOO_RATING_CLICK_INCREASE,
+    JOGOO_RATING_NOT_INTERESTED,
+    JOGOO_RATING_THRESHOLD,
+    JOGOO_LINKS_MAX_NUMBER,
+    JOGOO_LINKS_REALTIME_LINK,
+    JOGOO_LINKS_REALTIME_SLOPE
+} from './config';
 import { JogooClient } from "./client";
+import { JogooAggregateLinks, JogooAggregateSlope } from "./aggregator";
 
 export class Jogoo {
 
@@ -7,18 +17,26 @@ export class Jogoo {
     client:JogooClient;
 
     /** @var {Object} */
-    ratings: {purchased:number, clickInitial:number, clickIncrease:number, notInterested:number} = {
+    links: {maxNumber:number, realtimeLink:boolean, realtimeSlope:boolean} = {
+        maxNumber: JOGOO_LINKS_MAX_NUMBER,
+        realtimeLink: JOGOO_LINKS_REALTIME_LINK,
+        realtimeSlope: JOGOO_LINKS_REALTIME_SLOPE
+    };
+
+    /** @var {Object} */
+    ratings: {purchased:number, clickInitial:number, clickIncrease:number, notInterested:number, threshold:number} = {
         purchased: JOGOO_RATING_PURCHASED,
         clickInitial: JOGOO_RATING_CLICK_INITIAL,
         clickIncrease: JOGOO_RATING_CLICK_INCREASE,
-        notInterested: JOGOO_RATING_NOT_INTERESTED
+        notInterested: JOGOO_RATING_NOT_INTERESTED,
+        threshold: JOGOO_RATING_THRESHOLD
     };
 
     /**
      * @param {JogooClient} client
      * @param {Object} options
      */
-    constructor(client:JogooClient, options?:{[key: string]: string|number}) {
+    constructor(client:JogooClient, options?:{[key: string]: string|number|boolean}) {
         this.client = client;
         if (options !== undefined && options.hasOwnProperty('ratingPurchased')) {
             this.ratings.purchased = Number(options.ratingPurchased);
@@ -31,6 +49,18 @@ export class Jogoo {
         }
         if (options !== undefined && options.hasOwnProperty('notInterested')) {
             this.ratings.notInterested = Number(options.notInterested);
+        }
+        if (options !== undefined && options.hasOwnProperty('threshold')) {
+            this.ratings.threshold = Number(options.threshold);
+        }
+        if (options !== undefined && options.hasOwnProperty('linksMaxNumber')) {
+            this.links.maxNumber = Number(options.linksMaxNumber);
+        }
+        if (options !== undefined && options.hasOwnProperty('realtimeLink')) {
+            this.links.realtimeLink = Boolean(options.realtimeLink);
+        }
+        if (options !== undefined && options.hasOwnProperty('realtimeSlope')) {
+            this.links.realtimeSlope = Boolean(options.realtimeSlope);
         }
     }
 
@@ -53,6 +83,12 @@ export class Jogoo {
             await this.client.query(query).catch((err) => {
                 throw err;
             });
+
+            if (this.links.realtimeLink) {
+                await this.setLinksRealtime(memberId, productId, opt_category, rating, existing[0].rating);
+            } else if (this.links.realtimeSlope) {
+                await this.setSlopeRealtime(memberId, productId, opt_category, rating, existing[0].rating);
+            }
         } else {
             if (existing.length > 1) {
                 await this.deleteRating(memberId, productId, opt_category).catch((err) => {
@@ -64,6 +100,12 @@ export class Jogoo {
             await this.client.query(query).catch((err) => {
                 throw err;
             });
+
+            if (this.links.realtimeLink) {
+                await this.setLinksRealtime(memberId, productId, opt_category, rating, -1.0);
+            } else if (this.links.realtimeSlope) {
+                await this.setSlopeRealtime(memberId, productId, opt_category, rating, -1.0);
+            }
         }
         return true;
     }
@@ -174,6 +216,36 @@ WHERE F.member_id = ${fromMemberId} AND F.category = ${opt_category}`;
         } catch (err) {
             await this.client.rollback();
             throw err;
+        }
+    }
+
+    /**
+     * Update links without whole aggregation.
+     * @param {number} memberId
+     * @param {number} productId
+     * @param {number} category
+     * @param {number} rating
+     * @param {number} previous
+     */
+    private async setLinksRealtime(memberId:number, productId:number, category:number, rating:number, previous:number) {
+        if ((rating >= this.ratings.threshold && previous < this.ratings.threshold) || (rating < this.ratings.threshold && previous >= this.ratings.threshold)) {
+            let jogooAggregateLinks = new JogooAggregateLinks(this.client, {linksMaxNumber: this.links.maxNumber, threshold: this.ratings.threshold});
+            await jogooAggregateLinks.partialUpdate(memberId, productId, category);
+        }
+    }
+
+    /**
+     * Update slopes without whole aggregation.
+     * @param {number} memberId
+     * @param {number} productId
+     * @param {number} category
+     * @param {number} rating
+     * @param {number} previous
+     */
+    private async setSlopeRealtime(memberId:number, productId:number, category:number, rating:number, previous:number) {
+        if (rating > 0.0 || previous > 0.0) {
+            let jogooAggregateSlope = new JogooAggregateSlope(this.client, {linksMaxNumber: this.links.maxNumber, threshold: this.ratings.threshold});
+            await jogooAggregateSlope.partialUpdate(memberId, productId, category);
         }
     }
 
