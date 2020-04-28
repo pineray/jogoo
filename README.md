@@ -110,9 +110,22 @@ These 2 engines are quite fast but require some pre-computation. To do this we i
 
 These 2 engines can't be run in parallel. They share the same database tables and creating data for one of the engines overwrites all previous data created for the other engine.
 
-## Batch pre-computation
+### Real time or batch pre-computation
+As explained above, every rating set by a member generates new data for the item-based CF engines. This data is linked to all previous ratings given by the member. Hence, updating this item-based CF data in real time can cause the system to slow down dramatically if a member has rated many items. To avoid this kind of issues, we added 2 batch scripts that you can run daily (or more often if you use Jogoo) to compute the data. Nervertheless, some hosting services set a very low timeout limit for script execution, and you might not be able to run the batch scripts on these hosts.
 
-### For first engine
+#### Activating real-time computation
+To activate real-time computation, edit the .env file. Set the JOGOO_LINKS_REALTIME_LINK constant to true to get real-time updates for the first engine. Set JOGOO_LINKS_REALTIME_SLOPE to true to get real-tie updates for the second engine.
+
+Otherwise, it is possible to activate real-time computation by passing the options at creating Jogoo instance.
+```javascript
+// For first engine.
+let jogoo = Jogoo(jogooClient, {realtimeLink:true});
+// For second engine.
+let jogoo = Jogoo(jogooClient, {realtimeSlope:true});
+```
+#### Batch pre-computation
+
+##### For first engine
 ```javascript
 const { JogooAggregateLinks, JogooClient } = require('jogoo');
 
@@ -124,7 +137,7 @@ const { JogooAggregateLinks, JogooClient } = require('jogoo');
     jogooClient.end();
 })();
 ```
-### For second engine
+##### For second engine
 ```javascript
 const { JogooAggregateSlope, JogooClient } = require('jogoo');
 
